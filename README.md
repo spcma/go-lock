@@ -19,32 +19,39 @@
 - 写锁与写锁互斥
 
 ```go
-func main() {
-lock := sync.RWMutex{}
-var count int
-wg := sync.WaitGroup{}
-for i := 0; i < 5; i++ {
-wg.Add(1)
-go func (i int) {
-lock.RLock()
-defer lock.RUnlock()
-fmt.Println(i)
-wg.Done()
-}(i)
-}
+package main
 
-for i := 0; i < 3; i++ {
-wg.Add(1)
-go func () {
-lock.Lock()
-defer lock.Unlock()
-fmt.Println("start:", count)
-count++
-fmt.Println("end:", count)
-wg.Done()
-}()
-}
-wg.Wait()
+import (
+	"fmt"
+	"sync"
+)
+
+func main() {
+	lock := sync.RWMutex{}
+	var count int
+	wg := sync.WaitGroup{}
+	for i := 0; i < 5; i++ {
+		wg.Add(1)
+		go func(i int) {
+			lock.RLock()
+			defer lock.RUnlock()
+			fmt.Println(i)
+			wg.Done()
+		}(i)
+	}
+
+	for i := 0; i < 3; i++ {
+		wg.Add(1)
+		go func() {
+			lock.Lock()
+			defer lock.Unlock()
+			fmt.Println("start:", count)
+			count++
+			fmt.Println("end:", count)
+			wg.Done()
+		}()
+	}
+	wg.Wait()
 }
 ```
 
